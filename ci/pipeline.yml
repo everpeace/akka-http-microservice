@@ -1,0 +1,303 @@
+resources:
+  - name: repo-develop
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
+  - name: repo-release
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release
+      private_key: {{github-private-key}}
+    check_every: 10s
+  - name: repo-master
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: master
+      private_key: {{github-private-key}}
+    check_every: 10s
+  - name: version
+    type: semver
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: version
+      private_key: {{github-private-key}}
+      file: version
+      driver: git
+      initial_version: 0.0.0
+  - name: sbt-ivy-cache
+    type: docker-image
+    source:
+      repository: {{sbt-ivy-cache-repo}}
+      username: {{docker-hub-username}}
+      password: {{docker-hub-password}}
+      email: {{docker-hub-email}}
+
+jobs:
+  - name: test-develop
+    serial: true
+    public: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: unit
+        file: repo/ci/tasks/unit.yml
+
+  - name: deploy-develop
+    serial: true
+    public: false
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+          passed: [ test-develop ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: publish-docker-image
+        file: repo/ci/tasks/build-docker-image.yml
+        params:
+          DOCKER_REGISTORY: hogehoge
+      - task: deploy-to-dev-kube
+        file: repo/ci/tasks/deploy-to-kube.yml
+        params:
+          KUBE_SERVER: hogehoge
+          KUBE_NAMESPACE: hogehoge
+          KUBE_USER: hogehoge
+          KUBE_PASS: hoge
+          MANIFEST_PATH: repo/manifest.yml
+
+
+
+  - name: test-release
+    serial: true
+    public: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-release
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: unit
+        file: repo/ci/tasks/unit.yml
+
+  - name: deploy-staging
+    serial: true
+    public: false
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-release
+          passed: [ test-release ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: publish-docker-image
+        file: repo/ci/tasks/build-docker-image.yml
+        params:
+          DOCKER_REGISTORY: hogehoge
+      - task: deploy-to-dev-kube
+        file: repo/ci/tasks/deploy-to-kube.yml
+        params:
+          KUBE_SERVER: hogehoge
+          KUBE_NAMESPACE: hogehoge
+          KUBE_USER: hogehoge
+          KUBE_PASS: hoge
+          MANIFEST_PATH: repo/manifest.yml
+
+
+
+  - name: merge-release-to-master
+    public: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-master
+        - get: repo-release
+          passed: [ test-release ]
+      - task: merge-release-to-master
+        file: repo-release/ci/tasks/merge-release-branch.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+      - put: repo
+        resource: repo-master
+        params:
+          repository: out
+
+  # - name: test-master
+  #   serial: true
+  #   public: true
+  #   plan:
+  #     - aggregate:
+  #       - get: repo
+  #         resource: repo-master
+  #         # comment out bellow to support hotfix
+  #         passed: [ merge-release-to-master ]
+  #         trigger: true
+  #       - get: sbt-ivy-cache
+  #     - task: unit
+  #       file: repo/ci/tasks/unit.yml
+
+  - name: tag-master
+    public: true
+    plan:
+      - aggregate:
+        - get:  repo
+          resource: repo-master
+          passed: [ merge-release-to-master ]
+          trigger: true
+        - get: repo-release
+        - get: version
+        - get: sbt-ivy-cache
+      - task: bump-to-release-version
+        file: repo-release/ci/tasks/bump-to-release-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+      - put: repo
+        resource: repo-master
+        params:
+          repository: out
+          tag: version/number
+
+  - name: deploy-prod
+    serial: true
+    public: false
+    plan:
+      - aggregate:
+        - get:  repo
+          resource: repo-master
+          passed: [ merge-release-to-master ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: publish-docker-image
+        file: repo/ci/tasks/build-docker-image.yml
+        params:
+          DOCKER_REGISTORY: hogehoge
+      - task: deploy-to-dev-kube
+        file: repo/ci/tasks/deploy-to-kube.yml
+        params:
+          KUBE_SERVER: hogehoge
+          KUBE_NAMESPACE: hogehoge
+          KUBE_USER: hogehoge
+          KUBE_PASS: hoge
+          MANIFEST_PATH: repo/manifest.yml
+
+  - name: bump-version
+    public: true
+    serial_groups: [version]
+    plan:
+      - aggregate:
+        - get:  repo-master
+          passed: [ tag-master ]
+          trigger: true
+        - get:  repo
+          resource: repo-release
+        - get: version
+          params: {bump: patch}
+        - get: sbt-ivy-cache
+      - task: bump-to-next-develop-version
+        file: repo/ci/tasks/bump-to-next-develop-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+      - put: repo
+        resource: repo-release
+        params:
+          repository: out
+      - put: version
+        params: {file: version/number}
+
+  - name: merge-release-to-develop
+    public: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+        - get: repo-release
+          passed: [ bump-version ]
+          trigger: true
+      - task: merge-release-to-develop
+        file: repo-release/ci/tasks/merge-release-branch.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+      - put: repo
+        resource: repo-develop
+        params:
+          repository: out
+
+
+
+  - name: minor
+    serial_groups: [version]
+    plan:
+      - get: version
+      - put: version
+        params: {bump: minor}
+
+  - name: major
+    serial_groups: [version]
+    plan:
+      - get: version
+      - put: version
+        params: {bump: major}
+
+
+
+  - name: init-sbt-ivy-cache
+    plan:
+    - get: repo
+      resource: repo-develop
+    - task: build-sbt-ivy-cache
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: 1science/sbt
+        inputs:
+          - name: repo
+        outputs:
+          - name: to-push
+        run:
+          path: sh
+          args:
+            - repo/ci/tasks/sbt-ivy-cache.sh
+            - init
+    - put: sbt-ivy-cache
+      params:
+        import_file: to-push/rootfs.tar
+
+
+  - name: update-sbt-ivy-cache
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+        - get: sbt-ivy-cache
+      - task: build-sbt-ivy-cache
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: 1science/sbt
+          inputs:
+            - name: repo
+            - name: sbt-ivy-cache
+          outputs:
+            - name: to-push
+          run:
+            path: sh
+            args:
+              - repo/ci/tasks/sbt-ivy-cache.sh
+      - put: sbt-ivy-cache
+        params:
+          import_file: to-push/rootfs.tar

@@ -1,0 +1,18 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: java
+    tag: 8-jdk
+inputs:
+  - name: version
+  - name: repo
+  - name: repo-release
+  - name: m2
+outputs:
+  - name: out
+run:
+  path: /bin/bash
+  args:
+    - repo-release/ci/tasks/bump-to-release-version.sh

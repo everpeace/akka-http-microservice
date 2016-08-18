@@ -1,0 +1,14 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: danielwhatmuff/kubectl
+inputs:
+  - name: repo
+  - name: sbt-ivy-cache
+run:
+  dir: repo
+  path: sh
+  args:
+    - repo/ci/tasks/deploy-to-kube.sh
