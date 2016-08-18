@@ -8,7 +8,7 @@ scalaVersion := "2.11.8"
 maintainer := "Shingo Omura"
 dockerBaseImage := "openjdk:8-alpine"
 dockerExposedPorts := Seq(9000)
-dockerRepository := Some("chatwork")
+dockerRepository := Some("everpeace")
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
