@@ -6,7 +6,21 @@ resources:
       branch: develop
       private_key: {{github-private-key}}
     check_every: 10s
+  - name: repo-develop-to-push
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
   - name: repo-release
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release
+      private_key: {{github-private-key}}
+    check_every: 10s
+  - name: repo-release-to-push
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
@@ -208,7 +222,7 @@ jobs:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
       - put: repo
-        resource: repo-release
+        resource: repo-release-to-push
         params:
           repository: out
       - put: version
@@ -229,7 +243,7 @@ jobs:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
       - put: repo
-        resource: repo-develop
+        resource: repo-develop-to-push
         params:
           repository: out
 
