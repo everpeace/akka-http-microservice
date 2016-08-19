@@ -13,28 +13,12 @@ resources:
       branch: develop
       private_key: {{github-private-key}}
     check_every: 10s
-  - name: repo-develop-push
-    type: git
-    source:
-      uri: git@github.com:everpeace/akka-http-microservice
-      branch: develop
-      private_key: {{github-private-key}}
-      disable_ci_skip: true
-    check_every: 10s
   - name: repo-release
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: release
       private_key: {{github-private-key}}
-    check_every: 10s
-  - name: repo-release-push
-    type: git
-    source:
-      uri: git@github.com:everpeace/akka-http-microservice
-      branch: release
-      private_key: {{github-private-key}}
-      disable_ci_skip: true
     check_every: 10s
   - name: repo-master
     type: git
@@ -63,6 +47,27 @@ resources:
       username: {{docker-hub-username}}
       password: {{docker-hub-password}}
       email: {{docker-hub-email}}
+  # we need these two extra repo-???-push resource to ignore
+  # [ci skip] commits on normal repo-??? resources above.
+  # see: https://github.com/concourse/git-resource/issues/18#issuecomment-208971885
+  - name: repo-develop-push
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+      disable_ci_skip: true
+    check_every: 10s
+  - name: repo-release-push
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release
+      private_key: {{github-private-key}}
+      disable_ci_skip: true
+    check_every: 10s
+
+
 
 jobs:
   - name: test-develop
@@ -149,7 +154,7 @@ jobs:
         - get: repo-release
           passed: [ test-release ]
       - task: merge-release-to-master
-        file: repo-release/ci/tasks/merge-release-branch.yml
+        file: repo-release/ci/tasks/merge-release-branch_repo.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
@@ -158,19 +163,19 @@ jobs:
         params:
           repository: out
 
-  # - name: test-master
-  #   serial: true
-  #   public: true
-  #   plan:
-  #     - aggregate:
-  #       - get: repo
-  #         resource: repo-master
-  #         # comment out bellow to support hotfix
-  #         passed: [ merge-release-to-master ]
-  #         trigger: true
-  #       - get: sbt-ivy-cache
-  #     - task: unit
-  #       file: repo/ci/tasks/unit.yml
+  - name: test-master
+    serial: true
+    public: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-master
+          # comment out bellow to support hotfix
+          # passed: [ merge-release-to-master ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: unit
+        file: repo/ci/tasks/unit.yml
 
   - name: tag-master
     serial: true
@@ -179,7 +184,7 @@ jobs:
       - aggregate:
         - get:  repo
           resource: repo-master
-          passed: [ merge-release-to-master ]
+          passed: [ test-master ]
           trigger: true
         - get: repo-release
         - get: version
@@ -254,7 +259,7 @@ jobs:
           passed: [ bump-version ]
           trigger: true
       - task: merge-release-to-develop
-        file: repo-release/ci/tasks/merge-release-branch.yml
+        file: repo-release/ci/tasks/merge-release-branch_repo.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
@@ -278,51 +283,15 @@ jobs:
         - get: repo-develop
           resource: repo-develop-push
       - task: bump-to-next-develop-version
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: java
-              tag: 8-jdk
-          inputs:
-            - name: version
-            - name: repo-release
-              path: repo
-          outputs:
-            - name: out
-          params:
-            GIT_EMAIL: {{git-email}}
-            GIT_NAME: {{git-name}}
-          run:
-            path: /bin/bash
-            args:
-              - repo/ci/tasks/bump-to-next-develop-version.sh
-              - no_merge_master
-      - put: repo-release
-        resource: repo-release-push
+        file: repo-release/ci/tasks/bump-to-next-develop-version-no_merge_master.yml
         params:
-          repository: out
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - task: merge-release-to-develop
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: getourneau/alpine-bash-git
-          inputs:
-            - name: repo-develop
-              path: repo
-            - name: repo-release
-          outputs:
-            - name: out
-          params:
-            GIT_EMAIL: {{git-email}}
-            GIT_NAME: {{git-name}}
-          run:
-            path: /bin/bash
-            args:
-            - repo/ci/tasks/merge-release-branch.sh
+        file: repo-release/ci/tasks/merge-release-branch_repo-develop.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo-develop
         resource: repo-develop-push
         params:
@@ -343,51 +312,19 @@ jobs:
         - get: repo-develop
           resource: repo-develop-push
       - task: bump-to-next-develop-version
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: java
-              tag: 8-jdk
-          inputs:
-            - name: version
-            - name: repo-release
-              path: repo
-          outputs:
-            - name: out
-          params:
-            GIT_EMAIL: {{git-email}}
-            GIT_NAME: {{git-name}}
-          run:
-            path: /bin/bash
-            args:
-              - repo/ci/tasks/bump-to-next-develop-version.sh
-              - no_merge_master
+        file: repo-release/ci/tasks/bump-to-next-develop-version-no_merge_master.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo-release
         resource: repo-release-push
         params:
           repository: out
       - task: merge-release-to-develop
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: getourneau/alpine-bash-git
-          inputs:
-            - name: repo-develop
-              path: repo
-            - name: repo-release
-          outputs:
-            - name: out
-          params:
-            GIT_EMAIL: {{git-email}}
-            GIT_NAME: {{git-name}}
-          run:
-            path: /bin/bash
-            args:
-            - repo/ci/tasks/merge-release-branch.sh
+        file: repo-release/ci/tasks/merge-release-branch_repo-develop.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo-develop
         resource: repo-develop-push
         params:
