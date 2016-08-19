@@ -19,6 +19,7 @@ resources:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: develop
       private_key: {{github-private-key}}
+      disable_ci_skip: true
     check_every: 10s
   - name: repo-release
     type: git
@@ -33,6 +34,7 @@ resources:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: release
       private_key: {{github-private-key}}
+      disable_ci_skip: true
     check_every: 10s
   - name: repo-master
     type: git
@@ -267,7 +269,9 @@ jobs:
       - aggregate:
         - get: version
           params: {bump: minor}
-        - get: repo
+        - get: repo-release
+          resource: repo-release-push
+        - get: repo-develop
           resource: repo-develop-push
       - task: bump-to-next-develop-version
         config:
@@ -279,7 +283,8 @@ jobs:
               tag: 8-jdk
           inputs:
             - name: version
-            - name: repo
+            - name: repo-release
+              path: repo
           outputs:
             - name: out
           params:
@@ -290,10 +295,29 @@ jobs:
             args:
               - repo/ci/tasks/bump-to-next-develop-version.sh
               - no_merge_master
-      - put: repo
-        resource: repo-develop-push
+      - put: repo-release
+        resource: repo-release-push
         params:
           repository: out
+      - get: repo-release
+        resource: repo-release-push
+      - task: merge-release-to-develop
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: getourneau/alpine-bash-git
+          inputs:
+            - path: repo
+              name: repo-develop
+            - name: repo-release
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+            - repo-release/ci/tasks/merge-release-branch.sh
       - put: version
         params: {file: version/number}
 
@@ -303,7 +327,9 @@ jobs:
       - aggregate:
         - get: version
           params: {bump: major}
-        - get: repo
+        - get: repo-release
+          resource: repo-release-push
+        - get: repo-develop
           resource: repo-develop-push
       - task: bump-to-next-develop-version
         config:
@@ -315,7 +341,8 @@ jobs:
               tag: 8-jdk
           inputs:
             - name: version
-            - name: repo
+            - name: repo-release
+              path: repo
           outputs:
             - name: out
           params:
@@ -326,10 +353,29 @@ jobs:
             args:
               - repo/ci/tasks/bump-to-next-develop-version.sh
               - no_merge_master
-      - put: repo
-        resource: repo-develop-push
+      - put: repo-release
+        resource: repo-release-push
         params:
           repository: out
+      - get: repo-release
+        resource: repo-release-push
+      - task: merge-release-to-develop
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: getourneau/alpine-bash-git
+          inputs:
+            - path: repo
+              name: repo-develop
+            - name: repo-release
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+            - repo-release/ci/tasks/merge-release-branch.sh
       - put: version
         params: {file: version/number}
 
