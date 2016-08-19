@@ -200,7 +200,7 @@ jobs:
       - aggregate:
         - get:  repo
           resource: repo-master
-          passed: [ merge-release-to-master ]
+          passed: [ tag-master ]
           trigger: true
         - get: sbt-ivy-cache
       - task: publish-docker-image
