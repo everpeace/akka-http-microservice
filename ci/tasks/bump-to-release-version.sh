@@ -1,7 +1,7 @@
 #!/bin/sh
 
 VERSION=`cat version/number`
-MESSAGE="[Concourse CI] Release $VERSION ([ci skip]: this is to preventing from running ci on this commit.)"
+MESSAGE="[Concourse CI] Release $VERSION ([ci skip] on non-master branches)"
 
 cd out
 shopt -s dotglob
