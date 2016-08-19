@@ -13,7 +13,8 @@ mv -f ../repo/* ./
 
 if [ ! "$1" = "no_merge_master" ]; then
   git remote add -f master ../repo-master
-  git merge --no-edit master/master
+  MERGE_MESSAGE=${MESSAGE:-[ci skip][Concourse CI] Merge branch 'master' into $(git rev-parse --abbrev-ref HEAD)}
+  git merge --ff master/master -m $MERGE_MESSAGE
 fi
 
 echo "Bump to $VERSION"

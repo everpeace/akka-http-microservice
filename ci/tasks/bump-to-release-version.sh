@@ -1,7 +1,7 @@
 #!/bin/sh
 
 VERSION=`cat version/number`
-MESSAGE="[Concourse CI] Release $VERSION \n (master branch will ignore [ci skip])"
+MESSAGE="[Concourse CI] Release $VERSION (master branch will ignore [ci skip])"
 
 cd out
 shopt -s dotglob
