@@ -218,9 +218,7 @@ jobs:
         - get:  repo-master
           passed: [ tag-master ]
           trigger: true
-        - get:  repo
-          resource: repo-release
-        - get: repo-pushed
+        - get: repo
           resource: repo-release-pushed
         - get: version
           params: {bump: patch}
@@ -230,7 +228,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo-pushed
+      - put: repo
         resource: repo-release-pushed
         params:
           repository: out
@@ -242,8 +240,6 @@ jobs:
     plan:
       - aggregate:
         - get: repo
-          resource: repo-develop
-        - get: repo-pushed
           resource: repo-develop-pushed
         - get: repo-release
           resource: repo-release-pushed
@@ -254,7 +250,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo-pushed
+      - put: repo
         resource: repo-develop-pushed
         params:
           repository: out
