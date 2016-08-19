@@ -6,7 +6,7 @@ resources:
       branch: develop
       private_key: {{github-private-key}}
     check_every: 10s
-  - name: repo-develop-to-push
+  - name: repo-develop-pushed
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
@@ -20,7 +20,7 @@ resources:
       branch: release
       private_key: {{github-private-key}}
     check_every: 10s
-  - name: repo-release-to-push
+  - name: repo-release-pushed
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
@@ -234,7 +234,7 @@ jobs:
       - aggregate:
         - get: repo
           resource: repo-develop
-        - get: repo-release
+        - get: repo-release-pushed
           passed: [ bump-version ]
           trigger: true
       - task: merge-release-to-develop
@@ -243,7 +243,7 @@ jobs:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
       - put: repo
-        resource: repo-develop-to-push
+        resource: repo-develop-pushed
         params:
           repository: out
 
