@@ -318,6 +318,10 @@ jobs:
             path: /bin/bash
             args:
             - repo-release/ci/tasks/merge-release-branch.sh
+      - put: repo-develop
+        resource: repo-develop-push
+        params:
+          repository: out
       - put: version
         params: {file: version/number}
 
@@ -376,6 +380,10 @@ jobs:
             path: /bin/bash
             args:
             - repo-release/ci/tasks/merge-release-branch.sh
+      - put: repo-develop
+        resource: repo-develop-push
+        params:
+          repository: out
       - put: version
         params: {file: version/number}
 
