@@ -302,11 +302,42 @@ jobs:
   - name: major
     serial_groups: [version]
     plan:
-      - get: version
-        params: {bump: major}
+    plan:
+      - aggregate:
+        - get: version
+          params: {bump: major}
+        - get: repo
+          resource: repo-develop
+        - get: repo-push
+          resource: repo-develop-pushed
+      - task: bump-to-next-develop-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: java
+              tag: 8-jdk
+          inputs:
+            - name: version
+            - name: repo
+          outputs:
+            - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-to-next-develop-version.sh
+              - no_merge_master
+      - put: repo-push
+        resource: repo-develop-pushed
+        params:
+          repository: out
       - put: version
         params: {file: vertion/number}
-
+        
 
   - name: init-sbt-ivy-cache
     plan:
