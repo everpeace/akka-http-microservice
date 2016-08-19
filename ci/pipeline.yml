@@ -40,6 +40,10 @@ resources:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: master
       private_key: {{github-private-key}}
+      # mastser should process all commits
+      # that means this resource will ignore commit with
+      # messages containing [ci skip]
+      disable_ci_skip: true
     check_every: 10s
   - name: version
     type: semver
