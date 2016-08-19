@@ -5,7 +5,7 @@ image_resource:
   source:
     repository: getourneau/alpine-bash-git
 inputs:
-  # master branch
+  # target branch
   - name: repo
   # release branch
   - name: repo-release
