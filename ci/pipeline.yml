@@ -10,7 +10,7 @@ groups:
   - name: release
     jobs:
       - merge-release-to-master
-      - test-master
+      # - test-master
       - tag-master
       - deploy-prod
       - bump-version
@@ -210,7 +210,7 @@ jobs:
       - aggregate:
         - get:  repo
           resource: repo-master
-          passed: [ test-master ]
+          passed: [ merge-release-to-master ]
           trigger: true
         - get: repo-release
         - get: version
