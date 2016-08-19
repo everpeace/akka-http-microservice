@@ -1,0 +1,15 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: 1science/sbt
+inputs:
+  - name: repo
+outputs:
+  - name: to-push
+run:
+  path: sh
+  args:
+    - repo/ci/tasks/sbt-ivy-cache.sh
+    - init

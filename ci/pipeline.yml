@@ -140,6 +140,7 @@ jobs:
 
 
   - name: merge-release-to-master
+    serial: true
     public: true
     plan:
       - aggregate:
@@ -172,6 +173,7 @@ jobs:
   #       file: repo/ci/tasks/unit.yml
 
   - name: tag-master
+    serial: true
     public: true
     plan:
       - aggregate:
@@ -181,7 +183,6 @@ jobs:
           trigger: true
         - get: repo-release
         - get: version
-        - get: sbt-ivy-cache
       - task: bump-to-release-version
         file: repo-release/ci/tasks/bump-to-release-version.yml
         params:
@@ -217,6 +218,7 @@ jobs:
           MANIFEST_PATH: repo/manifest.yml
 
   - name: bump-version
+    serial: true
     public: true
     serial_groups: [version]
     plan:
@@ -228,9 +230,8 @@ jobs:
           resource: repo-release-push
         - get: version
           params: {bump: patch}
-        - get: sbt-ivy-cache
       - task: bump-to-next-develop-version
-        file: repo/ci/tasks/bump-to-next-develop-version.yml
+        file: repo-master/ci/tasks/bump-to-next-develop-version.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
@@ -242,6 +243,7 @@ jobs:
         params: {file: version/number}
 
   - name: merge-release-to-develop
+    serial: true
     public: true
     plan:
       - aggregate:
@@ -263,7 +265,9 @@ jobs:
 
 
 
-  - name: bump_minor
+  - name: bump-minor
+    serial: true
+    public: true
     serial_groups: [version]
     plan:
       - aggregate:
@@ -326,7 +330,9 @@ jobs:
       - put: version
         params: {file: version/number}
 
-  - name: bump_major
+  - name: bump-major
+    serial: true
+    public: true
     serial_groups: [version]
     plan:
       - aggregate:
@@ -394,22 +400,8 @@ jobs:
     plan:
     - get: repo
       resource: repo
-    - task: build-sbt-ivy-cache
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: 1science/sbt
-        inputs:
-          - name: repo
-        outputs:
-          - name: to-push
-        run:
-          path: sh
-          args:
-            - repo/ci/tasks/sbt-ivy-cache.sh
-            - init
+    - task: init-sbt-ivy-cache
+      file: repo/ci/tasks/sbt-ivy-cache-init.yml
     - put: sbt-ivy-cache
       params:
         import_file: to-push/rootfs.tar
@@ -422,21 +414,7 @@ jobs:
           resource: repo
         - get: sbt-ivy-cache
       - task: build-sbt-ivy-cache
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: 1science/sbt
-          inputs:
-            - name: repo
-            - name: sbt-ivy-cache
-          outputs:
-            - name: to-push
-          run:
-            path: sh
-            args:
-              - repo/ci/tasks/sbt-ivy-cache.sh
+        file: repo/ci/tasks/sbt-ivy-cache-update.yml
       - put: sbt-ivy-cache
         params:
           import_file: to-push/rootfs.tar

@@ -3,7 +3,6 @@
 VERSION=`cat version/number`-SNAPSHOT
 MESSAGE="[ci skip][Concourse CI] Bump to Next Development Version ($VERSION)"
 
-
 # repo: target branch to commit
 # repo-master: master branch
 

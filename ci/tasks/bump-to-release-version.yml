@@ -3,13 +3,10 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: java
-    tag: 8-jdk
+    repository: getourneau/alpine-bash-git
 inputs:
   - name: version
   - name: repo
-  - name: repo-release
-  - name: sbt-ivy-cache
 outputs:
   - name: out
 run:
