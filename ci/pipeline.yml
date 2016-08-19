@@ -1,4 +1,11 @@
 resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
   - name: repo-develop
     type: git
     source:
@@ -213,6 +220,8 @@ jobs:
           trigger: true
         - get:  repo
           resource: repo-release
+        - get: repo-pushed
+          resource: repo-release-pushed
         - get: version
           params: {bump: patch}
         - get: sbt-ivy-cache
@@ -221,7 +230,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo
+      - put: repo-pushed
         resource: repo-release-pushed
         params:
           repository: out
@@ -234,7 +243,10 @@ jobs:
       - aggregate:
         - get: repo
           resource: repo-develop
-        - get: repo-release-pushed
+        - get: repo-pushed
+          resource: repo-develop-pushed
+        - get: repo-release
+          resource: repo-release-pushed
           passed: [ bump-version ]
           trigger: true
       - task: merge-release-to-develop
@@ -242,7 +254,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo
+      - put: repo-pushed
         resource: repo-develop-pushed
         params:
           repository: out
@@ -268,7 +280,7 @@ jobs:
   - name: init-sbt-ivy-cache
     plan:
     - get: repo
-      resource: repo-develop
+      resource: repo
     - task: build-sbt-ivy-cache
       config:
         platform: linux
@@ -294,7 +306,7 @@ jobs:
     plan:
       - aggregate:
         - get: repo
-          resource: repo-develop
+          resource: repo
         - get: sbt-ivy-cache
       - task: build-sbt-ivy-cache
         config:
