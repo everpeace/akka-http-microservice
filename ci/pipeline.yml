@@ -1,3 +1,29 @@
+groups:
+  - name: develop
+    jobs:
+      - test-develop
+      - deploy-develop
+  - name: staging
+    jobs:
+      - test-release
+      - deploy-staging
+  - name: release
+    jobs:
+      - merge-release-to-master
+      - test-master
+      - tag-master
+      - deploy-prod
+      - bump-version
+      - merge-release-to-develop
+  - name: bump-versions
+    jobs:
+      - bump-major
+      - bump-minor
+  - name: sbt-ivy-cache
+    jobs:
+      - init-sbt-ivy-cache
+      - update-sbt-ivy-cache
+
 resources:
   - name: repo
     type: git
