@@ -11,4 +11,5 @@ cd repo
 # このtagをどうやって渡す？ sedで置換する？
 # kubectl create -f ${MANIFEST_PATH}
 
+echo "deploy $(sbt docker:version | tail -1 | cut -d' ' -f 2) to $KUBE_SERVER"
 exit 0;

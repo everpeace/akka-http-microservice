@@ -10,10 +10,13 @@ MESSAGE="[ci skip][Concourse CI] Bump to Next Development Version ($VERSION)"
 cd out
 shopt -s dotglob
 mv -f ../repo/* ./
-git remote add -f master ../repo-master
-git merge --no-edit master/master
-echo "Bump to $VERSION"
 
+if [ ! "$1" = "no_merge_master" ]; then
+  git remote add -f master ../repo-master
+  git merge --no-edit master/master
+fi
+
+echo "Bump to $VERSION"
 sed -i.bak -e "s/version := \".*\"/version := \"$VERSION\"/" build.sbt
 rm build.sbt.bak
 

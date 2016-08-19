@@ -13,7 +13,7 @@ resources:
       branch: develop
       private_key: {{github-private-key}}
     check_every: 10s
-  - name: repo-develop-pushed
+  - name: repo-develop-push
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
@@ -27,7 +27,7 @@ resources:
       branch: release
       private_key: {{github-private-key}}
     check_every: 10s
-  - name: repo-release-pushed
+  - name: repo-release-push
     type: git
     source:
       uri: git@github.com:everpeace/akka-http-microservice
@@ -218,10 +218,8 @@ jobs:
         - get:  repo-master
           passed: [ tag-master ]
           trigger: true
-        - get:  repo
-          resource: repo-release
-        - get: repo-pushed
-          resource: repo-release-pushed
+        - get: repo
+          resource: repo-release-push
         - get: version
           params: {bump: patch}
         - get: sbt-ivy-cache
@@ -230,8 +228,8 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo-pushed
-        resource: repo-release-pushed
+      - put: repo
+        resource: repo-release-push
         params:
           repository: out
       - put: version
@@ -242,11 +240,9 @@ jobs:
     plan:
       - aggregate:
         - get: repo
-          resource: repo-develop
-        - get: repo-pushed
-          resource: repo-develop-pushed
+          resource: repo-develop-push
         - get: repo-release
-          resource: repo-release-pushed
+          resource: repo-release-push
           passed: [ bump-version ]
           trigger: true
       - task: merge-release-to-develop
@@ -254,27 +250,84 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo-pushed
-        resource: repo-develop-pushed
+      - put: repo
+        resource: repo-develop-push
         params:
           repository: out
 
 
 
-  - name: minor
+  - name: bump_minor
     serial_groups: [version]
     plan:
-      - get: version
+      - aggregate:
+        - get: version
+          params: {bump: minor}
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-to-next-develop-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: java
+              tag: 8-jdk
+          inputs:
+            - name: version
+            - name: repo
+          outputs:
+            - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-to-next-develop-version.sh
+              - no_merge_master
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
       - put: version
-        params: {bump: minor}
+        params: {file: version/number}
 
-  - name: major
+  - name: bump_major
     serial_groups: [version]
     plan:
-      - get: version
+      - aggregate:
+        - get: version
+          params: {bump: major}
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-to-next-develop-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: java
+              tag: 8-jdk
+          inputs:
+            - name: version
+            - name: repo
+          outputs:
+            - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-to-next-develop-version.sh
+              - no_merge_master
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
       - put: version
-        params: {bump: major}
-
+        params: {file: version/number}
 
 
   - name: init-sbt-ivy-cache
