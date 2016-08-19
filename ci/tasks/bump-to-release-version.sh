@@ -8,7 +8,8 @@ shopt -s dotglob
 mv -f ../repo/* ./
 echo "Bump to ($VERSION)"
 
-// build.sbt内のversionを書き換える
+sed -ibak -e "s/version := \".*\"/version := \"$VERSION\"/" build.sbt
+rm build.sbtbak
 
 git config --global user.email "${GIT_EMAIL}"
 git config --global user.name "${GIT_NAME}"

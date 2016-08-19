@@ -14,7 +14,8 @@ git remote add -f master ../repo-master
 git merge --no-edit master/master
 echo "Bump to $VERSION"
 
-// build.sbtのversionを書き換える
+sed -i.bak -e "s/version := \".*\"/version := \"$VERSION\"/" build.sbt
+rm build.sbt.bak
 
 git config --global user.email "${GIT_EMAIL}"
 git config --global user.name "${GIT_NAME}"
