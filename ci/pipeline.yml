@@ -299,8 +299,6 @@ jobs:
         resource: repo-release-push
         params:
           repository: out
-      - get: repo-release
-        resource: repo-release-push
       - task: merge-release-to-develop
         config:
           platform: linux
@@ -364,8 +362,6 @@ jobs:
         resource: repo-release-push
         params:
           repository: out
-      - get: repo-release
-        resource: repo-release-push
       - task: merge-release-to-develop
         config:
           platform: linux
