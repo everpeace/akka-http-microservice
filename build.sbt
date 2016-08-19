@@ -2,7 +2,7 @@ enablePlugins(AshScriptPlugin)
 
 name := "akka-http-microservice"
 organization := "com.theiterators"
-version := "1.0"
+version := "0.0.0-SNAPSHOT"
 scalaVersion := "2.11.8"
 
 maintainer := "Shingo Omura"
