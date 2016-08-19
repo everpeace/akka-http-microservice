@@ -268,7 +268,6 @@ jobs:
         - get: version
           params: {bump: minor}
         - get: repo
-        - get: repo-push
           resource: repo-develop-pushed
       - task: bump-to-next-develop-version
         config:
@@ -291,7 +290,7 @@ jobs:
             args:
               - repo/ci/tasks/bump-to-next-develop-version.sh
               - no_merge_master
-      - put: repo-push
+      - put: repo
         resource: repo-develop-pushed
         params:
           repository: out
@@ -305,7 +304,6 @@ jobs:
         - get: version
           params: {bump: major}
         - get: repo
-        - get: repo-push
           resource: repo-develop-pushed
       - task: bump-to-next-develop-version
         config:
@@ -328,7 +326,7 @@ jobs:
             args:
               - repo/ci/tasks/bump-to-next-develop-version.sh
               - no_merge_master
-      - put: repo-push
+      - put: repo
         resource: repo-develop-pushed
         params:
           repository: out
