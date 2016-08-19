@@ -266,9 +266,11 @@ jobs:
     plan:
       - aggregate:
         - get: version
+          params: {bump: minor}
         - get: repo
           resource: repo-develop
-        - get: repo-develop-pushed
+        - get: repo-push
+          resource: repo-develop-pushed
       - task: bump-to-next-develop-version
         config:
           platform: linux
@@ -280,27 +282,30 @@ jobs:
           inputs:
             - name: version
             - name: repo
-            - name: repo-release
-            - name: sbt-ivy-cache
           outputs:
             - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
           run:
             path: /bin/bash
             args:
-              - repo/ci/tasks/bump-to-release-version.sh
-      - put: repo-develop-pushed
+              - repo/ci/tasks/bump-to-next-develop-version.sh
+              - no_merge_master
+      - put: repo-push
+        resource: repo-develop-pushed
         params:
           repository: out
       - put: version
-        params: {bump: minor}
+        params: {file: vertion/number}
 
   - name: major
     serial_groups: [version]
     plan:
       - get: version
-      - put: version
         params: {bump: major}
-
+      - put: version
+        params: {file: vertion/number}
 
 
   - name: init-sbt-ivy-cache

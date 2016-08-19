@@ -11,7 +11,7 @@ cd out
 shopt -s dotglob
 mv -f ../repo/* ./
 
-if [ ! "$1" = "no_merge_master" ]; this
+if [ ! "$1" = "no_merge_master" ]; then
   git remote add -f master ../repo-master
   git merge --no-edit master/master
 fi
