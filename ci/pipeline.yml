@@ -309,15 +309,18 @@ jobs:
             source:
               repository: getourneau/alpine-bash-git
           inputs:
-            - path: repo
-              name: repo-develop
+            - name: repo-develop
+              path: repo
             - name: repo-release
           outputs:
             - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
           run:
             path: /bin/bash
             args:
-            - repo-release/ci/tasks/merge-release-branch.sh
+            - repo/ci/tasks/merge-release-branch.sh
       - put: repo-develop
         resource: repo-develop-push
         params:
@@ -371,15 +374,18 @@ jobs:
             source:
               repository: getourneau/alpine-bash-git
           inputs:
-            - path: repo
-              name: repo-develop
+            - name: repo-develop
+              path: repo
             - name: repo-release
           outputs:
             - name: out
+          params:
+            GIT_EMAIL: {{git-email}}
+            GIT_NAME: {{git-name}}
           run:
             path: /bin/bash
             args:
-            - repo-release/ci/tasks/merge-release-branch.sh
+            - repo/ci/tasks/merge-release-branch.sh
       - put: repo-develop
         resource: repo-develop-push
         params:
