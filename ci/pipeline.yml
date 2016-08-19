@@ -261,7 +261,7 @@ jobs:
 
 
 
-  - name: minor
+  - name: bump_minor
     serial_groups: [version]
     plan:
       - aggregate:
@@ -298,7 +298,7 @@ jobs:
       - put: version
         params: {file: vertion/number}
 
-  - name: major
+  - name: bump_major
     serial_groups: [version]
     plan:
       - aggregate:
