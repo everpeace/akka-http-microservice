@@ -1,4 +1,11 @@
 resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
   - name: repo-develop
     type: git
     source:
@@ -273,7 +280,7 @@ jobs:
   - name: init-sbt-ivy-cache
     plan:
     - get: repo
-      resource: repo-develop
+      resource: repo
     - task: build-sbt-ivy-cache
       config:
         platform: linux
@@ -299,7 +306,7 @@ jobs:
     plan:
       - aggregate:
         - get: repo
-          resource: repo-develop
+          resource: repo
         - get: sbt-ivy-cache
       - task: build-sbt-ivy-cache
         config:
