@@ -264,7 +264,33 @@ jobs:
   - name: minor
     serial_groups: [version]
     plan:
-      - get: version
+      - aggregate:
+        - get: version
+        - get: repo
+          resource: repo-develop
+        - get: repo-develop-pushed
+      - task: bump-to-next-develop-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: java
+              tag: 8-jdk
+          inputs:
+            - name: version
+            - name: repo
+            - name: repo-release
+            - name: sbt-ivy-cache
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-to-release-version.sh
+      - put: repo-develop-pushed
+        params:
+          repository: out
       - put: version
         params: {bump: minor}
 
