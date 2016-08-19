@@ -189,19 +189,19 @@ jobs:
         params:
           repository: out
 
-  - name: test-master
-    serial: true
-    public: true
-    plan:
-      - aggregate:
-        - get: repo
-          resource: repo-master
-          # comment out bellow to support hotfix
-          # passed: [ merge-release-to-master ]
-          trigger: true
-        - get: sbt-ivy-cache
-      - task: unit
-        file: repo/ci/tasks/unit.yml
+  # - name: test-master
+  #   serial: true
+  #   public: true
+  #   plan:
+  #     - aggregate:
+  #       - get: repo
+  #         resource: repo-master
+  #         # comment out bellow to support hotfix
+  #         # passed: [ merge-release-to-master ]
+  #         trigger: true
+  #       - get: sbt-ivy-cache
+  #     - task: unit
+  #       file: repo/ci/tasks/unit.yml
 
   - name: tag-master
     serial: true
