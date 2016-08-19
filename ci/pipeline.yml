@@ -52,6 +52,10 @@ resources:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: master
       private_key: {{github-private-key}}
+      # mastser should process all commits
+      # that means this resource will ignore commit with
+      # messages containing [ci skip]
+      disable_ci_skip: true
     check_every: 10s
   - name: version
     type: semver
@@ -85,14 +89,6 @@ resources:
     source:
       uri: git@github.com:everpeace/akka-http-microservice
       branch: release
-      private_key: {{github-private-key}}
-      disable_ci_skip: true
-    check_every: 10s
-  - name: repo-master-push
-    type: git
-    source:
-      uri: git@github.com:everpeace/akka-http-microservice
-      branch: master
       private_key: {{github-private-key}}
       disable_ci_skip: true
     check_every: 10s
@@ -216,7 +212,6 @@ jobs:
           resource: repo-master
           passed: [ test-master ]
           trigger: true
-        - get: repo-master-push
         - get: repo-release
         - get: version
       - task: bump-to-release-version
@@ -224,7 +219,8 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-      - put: repo-master-push
+      - put: repo
+        resource: repo-master
         params:
           repository: out
           tag: version/number
@@ -235,7 +231,7 @@ jobs:
     plan:
       - aggregate:
         - get:  repo
-          resource: repo-master-push
+          resource: repo-master
           passed: [ tag-master ]
           trigger: true
         - get: sbt-ivy-cache
@@ -258,7 +254,7 @@ jobs:
     serial_groups: [version]
     plan:
       - aggregate:
-        - get:  repo-master-push
+        - get:  repo-master
           passed: [ tag-master ]
           trigger: true
         - get: repo
