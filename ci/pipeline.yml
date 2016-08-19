@@ -222,7 +222,7 @@ jobs:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
       - put: repo
-        resource: repo-release-to-push
+        resource: repo-release-pushed
         params:
           repository: out
       - put: version
