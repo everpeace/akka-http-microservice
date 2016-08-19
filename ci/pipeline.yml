@@ -62,8 +62,8 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
-        params:
-          DOCKER_REGISTORY: hogehoge
+        # params:
+        # DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
         params:
@@ -99,8 +99,8 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
-        params:
-          DOCKER_REGISTORY: hogehoge
+        # params:
+        #   DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
         params:
@@ -178,8 +178,8 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
-        params:
-          DOCKER_REGISTORY: hogehoge
+        # params:
+        #   DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
         params:
