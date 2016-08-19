@@ -296,7 +296,7 @@ jobs:
         params:
           repository: out
       - put: version
-        params: {file: vertion/number}
+        params: {file: version/number}
 
   - name: bump_major
     serial_groups: [version]
