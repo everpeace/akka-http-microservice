@@ -336,8 +336,8 @@ jobs:
         params:
           repository: out
       - put: version
-        params: {file: vertion/number}
-        
+        params: {file: version/number}
+
 
   - name: init-sbt-ivy-cache
     plan:
