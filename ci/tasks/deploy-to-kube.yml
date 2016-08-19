@@ -3,7 +3,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: danielwhatmuff/kubectl
+    repository: java
+    tag: 8-jdk
 inputs:
   - name: repo
   - name: sbt-ivy-cache
