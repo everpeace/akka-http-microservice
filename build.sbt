@@ -1,8 +1,11 @@
+# DON'T EDIT THE NEXT LINE
+version := "0.0.0"
+# ABOVE LINE IS MAINTAINED BY CD SERVER
+
 enablePlugins(AshScriptPlugin)
 
 name := "akka-http-microservice"
 organization := "com.theiterators"
-version := "0.0.0-SNAPSHOT"
 scalaVersion := "2.11.8"
 
 maintainer := "Shingo Omura"
