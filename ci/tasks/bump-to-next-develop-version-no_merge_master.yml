@@ -11,9 +11,6 @@ inputs:
     path: repo
 outputs:
   - name: out
-params:
-  GIT_EMAIL: {{git-email}}
-  GIT_NAME: {{git-name}}
 run:
   path: /bin/bash
   args:
