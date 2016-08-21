@@ -1,3 +1,22 @@
+# Pipeline for standard 3-stage (develop, staging, production) deployment.
+# Assumed branch model is "slightly modified" git-flow.
+#   'develop' branch:
+#     development branch. feature branches would be merged to it.
+#   'release' branch:
+#     as not git-flow, 'release' branch lives forever.
+#     as git-flow, release operation will be performed here.
+#     this pipeline supports to committing:
+#       - release version to release branch just before releasing to production
+#         (actually commit it on master branch first and merge it to release branch)
+#       - next development version to release branch after releasing to production.
+#         (this commit will be merged to develop branch finaly)
+#   'master' branch:
+#     commits on master branch should be
+#       - released to production
+#       - tagged with release version
+
+
+
 # groups:
 #   - name: develop
 #     jobs:
@@ -23,6 +42,8 @@
 #     jobs:
 #       - init-sbt-ivy-cache
 #       - update-sbt-ivy-cache
+
+
 
 resources:
   - name: repo-develop
