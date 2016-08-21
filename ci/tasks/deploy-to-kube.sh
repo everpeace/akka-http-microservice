@@ -8,7 +8,7 @@ cd repo
 # kubectl set-credential deployuser --username=${KUBE_USER} --password=${KUBE_PASS}
 # kubectl config use-context target
 # target_tag=$(sbt docker:version | tail -1 | cut -d' ' -f 2)
-# このtagをどうやって渡す？ sedで置換する？
+# このtagをどうやって渡す？ 
 # kubectl create -f ${MANIFEST_PATH}
 
 echo "deploy $(sbt docker:version | tail -1 | cut -d' ' -f 2) to $KUBE_SERVER"

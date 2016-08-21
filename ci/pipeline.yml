@@ -25,13 +25,6 @@
 #       - update-sbt-ivy-cache
 
 resources:
-  - name: repo
-    type: git
-    source:
-      uri: git@github.com:everpeace/akka-http-microservice
-      branch: develop
-      private_key: {{github-private-key}}
-    check_every: 10s
   - name: repo-develop
     type: git
     source:
@@ -39,6 +32,8 @@ resources:
       branch: develop
       private_key: {{github-private-key}}
     check_every: 10s
+  # 'release' branch is assumes to exists always.
+  # this is diffrent from standard git-flow
   - name: repo-release
     type: git
     source:
@@ -54,7 +49,10 @@ resources:
       private_key: {{github-private-key}}
       # mastser should process all commits
       # that means this resource will ignore commit with
-      # messages containing [ci skip]
+      # messages containing [ci skip].
+      # [ci skip] prevents from unnecessary triggers on test-develop
+      # and test-release when some release commit will be merged on
+      # these branch.
       disable_ci_skip: true
     check_every: 10s
   - name: version
@@ -92,10 +90,20 @@ resources:
       private_key: {{github-private-key}}
       disable_ci_skip: true
     check_every: 10s
+  # general repo resource for sbt-ivy-cache
+  # pipeline-view on web would be more messy when when repo-develop was re-used
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
 
 
 
 jobs:
+  # continuous integration for develop branch
   - name: test-develop
     serial: true
     public: true
@@ -132,7 +140,9 @@ jobs:
           MANIFEST_PATH: repo/manifest.yml
 
 
-
+  # verification for release on staging environemnt
+  # it assumes that merging 'develop' to 'release' will be performed manually
+  # by the team.
   - name: test-release
     serial: true
     public: true
@@ -169,7 +179,10 @@ jobs:
           MANIFEST_PATH: repo/manifest.yml
 
 
-
+  # This job should executed manually.
+  # Deployment to production flow starts here.
+  # When team decides to release current release braanch
+  # team should execute this job manually.
   - name: merge-release-to-master
     serial: true
     public: true
@@ -203,6 +216,8 @@ jobs:
   #     - task: unit
   #       file: repo/ci/tasks/unit.yml
 
+  # Commiting "Realease version" with [ci skip] on master branch
+  # and then push and tag it.
   - name: tag-master
     serial: true
     public: true
@@ -225,6 +240,7 @@ jobs:
           repository: out
           tag: version/number
 
+  # build artififacts and deploy it to production
   - name: deploy-prod
     serial: true
     public: false
@@ -248,6 +264,13 @@ jobs:
           KUBE_PASS: hoge
           MANIFEST_PATH: repo/manifest.yml
 
+  # Preparation for next release.
+  # - Merging master branch to release branch (merging "release commit").
+  # - Committing "next development version(-SNAPSHOT)" on release branch
+  #   and push it.
+  # - this job always bumps patch version (bumping Z in x.y.Z)
+  #   when team needs to bump minor/major version.
+  #   bump-minor/major job should be executed manually.
   - name: bump-version
     serial: true
     public: true
@@ -273,6 +296,8 @@ jobs:
       - put: version
         params: {file: version/number}
 
+  # Merging "next development version" commit on release branch
+  # to develop branch
   - name: merge-release-to-develop
     serial: true
     public: true
@@ -295,7 +320,10 @@ jobs:
           repository: out
 
 
-
+  # Bumping minor version manually (Y in x.Y.z).
+  # - Bumping minor version on release branch and push it.
+  #   (release preparation should be occured in release branch)
+  # - Merging the bump to develop branch.
   - name: bump-minor
     serial: true
     public: true
@@ -325,6 +353,10 @@ jobs:
       - put: version
         params: {file: version/number}
 
+  # Bumping major version manually (X in X.y.z).
+  # - Bumping major version on release branch and push it.
+  #   (release preparation should be occured in release branch)
+  # - Merging the bump to develop branch.
   - name: bump-major
     serial: true
     public: true
@@ -358,7 +390,7 @@ jobs:
       - put: version
         params: {file: version/number}
 
-
+  # manual job for sbt and ivy cache management(init and update)
   - name: init-sbt-ivy-cache
     plan:
     - get: repo
@@ -368,8 +400,6 @@ jobs:
     - put: sbt-ivy-cache
       params:
         import_file: to-push/rootfs.tar
-
-
   - name: update-sbt-ivy-cache
     plan:
       - aggregate:
