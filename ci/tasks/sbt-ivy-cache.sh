@@ -2,8 +2,8 @@
 
 cd repo
 
-if [ "$1" == "init" ]; then
-	mkdir -p ../sbt-ivy-cache/rootfs/opt/boot
+if [ ! -e ../sbt-ivy-cache ]; then
+  mkdir -p ../sbt-ivy-cache/rootfs/opt/boot
   mkdir -p ../sbt-ivy-cache/rootfs/opt/ivy
 fi
 

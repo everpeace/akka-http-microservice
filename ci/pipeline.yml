@@ -404,8 +404,8 @@ jobs:
     plan:
     - get: repo
       resource: repo
-    - task: init-sbt-ivy-cache
-      file: repo/ci/tasks/sbt-ivy-cache-init.yml
+    - task: initialize-sbt-ivy-cache
+      file: repo/ci/tasks/sbt-ivy-cache.yml
     - put: sbt-ivy-cache
       params:
         import_file: to-push/rootfs.tar
@@ -416,7 +416,7 @@ jobs:
           resource: repo
         - get: sbt-ivy-cache
       - task: build-sbt-ivy-cache
-        file: repo/ci/tasks/sbt-ivy-cache-update.yml
+        file: repo/ci/tasks/sbt-ivy-cache.yml
       - put: sbt-ivy-cache
         params:
           import_file: to-push/rootfs.tar
