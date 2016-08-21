@@ -29,3 +29,5 @@ libraryDependencies ++= {
 }
 
 Revolver.settings
+
+
