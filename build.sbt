@@ -1,5 +1,5 @@
 // DON'T EDIT THE NEXT LINE
-version := "5.0.0"
+version := "5.0.1-SNAPSHOT"
 // ABOVE LINE IS MAINTAINED BY CD SERVER
 
 enablePlugins(AshScriptPlugin)
