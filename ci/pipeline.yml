@@ -127,7 +127,6 @@ jobs:
   # continuous integration for develop branch
   - name: test-develop
     serial: true
-    public: true
     plan:
       - aggregate:
         - get: repo
@@ -139,7 +138,6 @@ jobs:
 
   - name: deploy-develop
     serial: true
-    public: false
     plan:
       - aggregate:
         - get: repo
@@ -166,7 +164,6 @@ jobs:
   # by the team.
   - name: test-release
     serial: true
-    public: true
     plan:
       - aggregate:
         - get: repo
@@ -178,7 +175,6 @@ jobs:
 
   - name: deploy-staging
     serial: true
-    public: false
     plan:
       - aggregate:
         - get: repo
@@ -206,7 +202,6 @@ jobs:
   # team should execute this job manually.
   - name: merge-release-to-master
     serial: true
-    public: true
     plan:
       - aggregate:
         - get: repo
@@ -225,7 +220,6 @@ jobs:
 
   # - name: test-master
   #   serial: true
-  #   public: true
   #   plan:
   #     - aggregate:
   #       - get: repo
@@ -241,7 +235,6 @@ jobs:
   # and then push and tag it.
   - name: tag-master
     serial: true
-    public: true
     plan:
       - aggregate:
         - get:  repo
@@ -264,7 +257,6 @@ jobs:
   # build artififacts and deploy it to production
   - name: deploy-prod
     serial: true
-    public: false
     plan:
       - aggregate:
         - get:  repo
@@ -294,7 +286,6 @@ jobs:
   #   bump-minor/major job should be executed manually.
   - name: bump-version
     serial: true
-    public: true
     serial_groups: [version]
     plan:
       - aggregate:
@@ -321,7 +312,6 @@ jobs:
   # to develop branch
   - name: merge-release-to-develop
     serial: true
-    public: true
     plan:
       - aggregate:
         - get: repo
@@ -347,7 +337,6 @@ jobs:
   # - Merging the bump to develop branch.
   - name: bump-minor
     serial: true
-    public: true
     serial_groups: [version]
     plan:
       - aggregate:
@@ -380,7 +369,6 @@ jobs:
   # - Merging the bump to develop branch.
   - name: bump-major
     serial: true
-    public: true
     serial_groups: [version]
     plan:
       - aggregate:
