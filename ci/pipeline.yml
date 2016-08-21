@@ -147,10 +147,12 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
+        attempts: {{attempts}}
         # params:
         # DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
+        attempts: {{attempts}}
         params:
           KUBE_SERVER: hogehoge
           KUBE_NAMESPACE: hogehoge
@@ -184,10 +186,12 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
+        attempts: {{attempts}}
         # params:
         #   DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
+        attempts: {{attempts}}
         params:
           KUBE_SERVER: hogehoge
           KUBE_NAMESPACE: hogehoge
@@ -266,10 +270,12 @@ jobs:
         - get: sbt-ivy-cache
       - task: publish-docker-image
         file: repo/ci/tasks/build-docker-image.yml
+        attempts: {{attempts}}
         # params:
         #   DOCKER_REGISTORY: hogehoge
       - task: deploy-to-dev-kube
         file: repo/ci/tasks/deploy-to-kube.yml
+        attempts: {{attempts}}
         params:
           KUBE_SERVER: hogehoge
           KUBE_NAMESPACE: hogehoge
