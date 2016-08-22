@@ -1,7 +1,3 @@
-// DON'T EDIT THE NEXT LINE
-version := "5.0.1-SNAPSHOT"
-// ABOVE LINE IS MAINTAINED BY CD SERVER
-
 enablePlugins(AshScriptPlugin)
 
 name := "akka-http-microservice"
@@ -29,5 +25,3 @@ libraryDependencies ++= {
 }
 
 Revolver.settings
-
-
