@@ -42,7 +42,7 @@ resources:
     type: semver
     source:
       uri: git@github.com:everpeace/akka-http-microservice
-      branch: release-version
+      branch: develop-version
       private_key: {{github-private-key}}
       file: version
       driver: git
