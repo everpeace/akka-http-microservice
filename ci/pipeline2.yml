@@ -96,6 +96,9 @@ jobs:
           resource: repo-develop-push
       - task: bump-develop-version
         file: repo/ci/tasks/bump-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo
         resource: repo-develop-push
         params:
@@ -135,6 +138,9 @@ jobs:
           resource: repo-develop-push
       - task: bump-develop-version
         file: repo/ci/tasks/bump-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo
         resource: repo-develop-push
         params:
@@ -153,6 +159,9 @@ jobs:
           resource: repo-develop-push
       - task: bump-develop-version
         file: repo/ci/tasks/bump-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
       - put: repo
         resource: repo-develop-push
         params:

@@ -8,8 +8,8 @@ shopt -s dotglob
 mv -f ../repo/* ./
 echo "Bump to ($VERSION)"
 
-sed -ibak -e "s/version := \".*\"/version := \"$VERSION\"/" build.sbt
-rm build.sbtbak
+sed -ibak -e "s/version := \".*\"/version := \"$VERSION\"/" version.sbt
+rm version.sbtbak
 
 git config --global user.email "${GIT_EMAIL}"
 git config --global user.name "${GIT_NAME}"
