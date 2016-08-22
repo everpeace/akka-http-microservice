@@ -1,7 +1,11 @@
 #!/bin/sh
 
 VERSION=`cat version/number`${VERSION_POSTFIX}
-MESSAGE="${MESSAGE:-[ci skip][Concourse CI] Bump Version (${VERSION})}"
+MESSAGE="${MESSAGE:-[Concourse CI] Bump Version (${VERSION})}"
+CI_SKIP=${CI_SKIP:-true}
+if [ "${CI_SKIP}" = "true" ]; then
+  MESSAGE="[ci skip]${MESSAGE}"
+fi
 VERSION_FILE="version.sbt"
 
 cd out-version
