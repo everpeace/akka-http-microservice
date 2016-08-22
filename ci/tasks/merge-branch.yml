@@ -4,12 +4,9 @@ image_resource:
   type: docker-image
   source:
     repository: getourneau/alpine-bash-git
-# inputs:
-#   - name: version
-#   - name: repo
 outputs:
   - name: out
 run:
   path: /bin/bash
   args:
-    - repo/ci/tasks/bump-version.sh
+  - repo-release/ci/tasks/merge-branch.sh

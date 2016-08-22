@@ -84,7 +84,66 @@ resources:
     check_every: 10s
 
 jobs:
-  - name: bump-develop-version
+  - name: create-release-candidate-from-develop
+    serial: true
+    serial_groups: [ release-version, develop-version ]
+    plan:
+      - aggregate:
+        - get: repo-develop
+        - get: repo-develop-push
+        - get: repo-release
+        - get: repo-release-push
+        - get: develop-version
+          param: { pre: rc }
+      - task: merge-develop-to-release
+        inputs:
+          - name: repo-develop-push
+            path: repo-target
+          - name: repo-release-push
+            path: repo
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+        file: repo-develop/ci/tasks/merge-branch.yml
+      - put: repo-release-push
+        params:
+          repository: out
+      - task: commit-rc-version-to-release
+        inputs:
+          - name: repo-release-push
+            path: repo
+          - version: develop-version
+            path: version
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+        file: repo-develop/ci/tasks/bump-version.yml
+      - put: repo-release-push
+        params:
+          repository: out
+      - put: release-version
+        params: { file: develop-version/number }
+      - get: develop-version
+        param: { bump: patch, pre: alpha }
+      - task: bump-next-develop-version
+        inputs:
+          - name: repo-develop-push
+            path: repo
+          - name: develop-version
+            path: version
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+          VERSION_POSTFIX: "-SNAPSHOT"
+        file: repo-develop/ci/tasks/bump-version.yml
+      - put: repo-develop-push
+        params:
+          repository: out
+      - put: develop-version
+        param: { bump: patch, pre: alpha }
+
+
+  - name: bump-alpha-version
     serial: true
     serial_groups: [ develop-version ]
     plan:
@@ -94,11 +153,15 @@ jobs:
           params: { pre: alpha }
         - get: repo
           resource: repo-develop-push
-      - task: bump-develop-version
-        file: repo/ci/tasks/bump-version.yml
+      - task: bump-alpha-version-on-develop
+        inputs:
+          - name: repo
+          - name: version
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
+          VERSION_POSTFIX: "-SNAPSHOT"
+        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
@@ -107,25 +170,32 @@ jobs:
         resource: develop-version
         params: { pre: alpha }
 
-  # - name: bump-release-version
-  #   serial: true
-  #   serial_groups: [ release-version ]
-  #   plan:
-  #     - aggregate:
-  #       - get: version
-  #         resource: release-version
-  #         params: { pre: rc }
-  #       - get: repo
-  #         resource: repo-release-push
-  #     - task: bump-release-version
-  #       file: repo/ci/tasks/bump-version.yml
-  #     - put: repo
-  #       resource: repo-develop-push
-  #       params:
-  #         repository: out
-  #     - put: version
-  #       resource: release-version
-  #       params: {file: version/number}
+  - name: bump-patch-version
+    serial: true
+    serial_groups: [ develop-version ]
+    plan:
+      - aggregate:
+        - get: version
+          resource: develop-version
+          params: { bump: patch, pre: alpha }
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-patch-version-on-develop
+        inputs:
+          - name: repo
+          - name: version
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+          VERSION_POSTFIX: "-SNAPSHOT"
+        file: repo/ci/tasks/bump-version.yml
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
+      - put: version
+        resource: develop-version
+        params: { bump: patch, pre: alpha }
 
   - name: bump-minor-version
     serial: true
@@ -137,11 +207,15 @@ jobs:
           params: { bump: minor, pre: alpha }
         - get: repo
           resource: repo-develop-push
-      - task: bump-develop-version
-        file: repo/ci/tasks/bump-version.yml
+      - task: bump-minor-version-on-develop
+        inputs:
+          - name: repo
+          - name: version
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
+          VERSION_POSTFIX: "-SNAPSHOT"
+        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
@@ -149,6 +223,7 @@ jobs:
       - put: version
         resource: develop-version
         params: { bump: minor, pre: alpha }
+
   - name: bump-major-version
     serial: true
     serial_groups: [ develop-version ]
@@ -159,11 +234,15 @@ jobs:
           params: { bump: major, pre: alpha }
         - get: repo
           resource: repo-develop-push
-      - task: bump-develop-version
-        file: repo/ci/tasks/bump-version.yml
+      - task: bump-major-version-on-develop
+        inputs:
+          - name: repo
+          - name: version
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
+          VERSION_POSTFIX: "-SNAPSHOT"
+        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:

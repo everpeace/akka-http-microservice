@@ -1,11 +1,12 @@
 #!/bin/sh
 
-VERSION=`cat version/number`-SNAPSHOT
-MESSAGE="[ci skip][Concourse CI] Bump Version (${VERSION})"
+VERSION=`cat version/number`${VERSION_POSTFIX}
+MESSAGE="${MESSAGE:-[ci skip][Concourse CI] Bump Version (${VERSION})}"
 VERSION_FILE="version.sbt"
 
 cd out
 shopt -s dotglob
+rm -rf *
 mv -f ../repo/* ./
 
 echo "Bump to ${VERSION}"
