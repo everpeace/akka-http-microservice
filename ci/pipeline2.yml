@@ -133,6 +133,7 @@ jobs:
               path: version
           outputs:
             - name: out
+            - name: out-version
           run:
             path: /bin/bash
             args:
@@ -161,6 +162,7 @@ jobs:
               path: version
           outputs:
             - name: out
+            - name: out-version
           run:
             path: /bin/bash
             args:

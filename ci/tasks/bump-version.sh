@@ -5,7 +5,9 @@ MESSAGE="${MESSAGE:-[ci skip][Concourse CI] Bump Version (${VERSION})}"
 VERSION_FILE="version.sbt"
 
 cd out-version
-rm number
+if [ -e number ]; then
+  rm number
+fi
 echo ${VERSION} > number
 cd ..
 
