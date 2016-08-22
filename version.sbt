@@ -1,3 +1,3 @@
 // DON'T EDIT THE NEXT LINE
-version := "2.0.0-alpha.1"
+version := "2.0.0-rc.1"
 // ABOVE LINE IS MAINTAINED BY CD SERVER
