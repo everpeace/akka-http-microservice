@@ -105,7 +105,7 @@ jobs:
           repository: out
       - put: version
         resource: develop-version
-        params: {file: version/number}
+        params: { pre: alpha }
 
   # - name: bump-release-version
   #   serial: true
