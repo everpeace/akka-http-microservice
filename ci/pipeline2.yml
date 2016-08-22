@@ -132,7 +132,8 @@ jobs:
     serial_groups: [ develop-version ]
     plan:
       - aggregate:
-        - get: develop-version
+        - get: version
+          resource: develop-version
           params: { bump: minor, pre: alpha }
         - get: repo
           resource: repo-develop-push
@@ -147,13 +148,14 @@ jobs:
           repository: out
       - put: version
         resource: develop-version
-        params: {file: version/number}
+        params: { bump: minor, pre: alpha }
   - name: bump-major-version
     serial: true
     serial_groups: [ develop-version ]
     plan:
       - aggregate:
-        - get: develop-version
+        - get: version
+          resource: develop-version
           params: { bump: major, pre: alpha }
         - get: repo
           resource: repo-develop-push
@@ -168,4 +170,4 @@ jobs:
           repository: out
       - put: version
         resource: develop-version
-        params: {file: version/number}
+        params: { bump: major, pre: alpha }
