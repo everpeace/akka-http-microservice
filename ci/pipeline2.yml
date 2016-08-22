@@ -94,7 +94,7 @@ jobs:
         - get: repo-release
         - get: repo-release-push
         - get: develop-version
-          param: { bump: final, pre: rc }
+          params: { bump: final, pre: rc }
       - task: merge-develop-to-release
         config:
           platform: linux
@@ -147,7 +147,7 @@ jobs:
       - put: release-version
         params: { file: out-version/number }
       - get: develop-version
-        param: { bump: patch, pre: alpha }
+        params: { bump: patch, pre: alpha }
       - task: bump-next-develop-version
         config:
           platform: linux
@@ -175,7 +175,7 @@ jobs:
         params:
           repository: out
       - put: develop-version
-        param: { bump: patch, pre: alpha }
+        params: { bump: patch, pre: alpha }
 
 
   - name: bump-alpha-version
