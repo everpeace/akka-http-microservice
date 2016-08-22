@@ -4,9 +4,9 @@ image_resource:
   type: docker-image
   source:
     repository: getourneau/alpine-bash-git
-# inputs:
-#   - name: version
-#   - name: repo
+inputs:
+  - name: version
+  - name: repo
 outputs:
   - name: out
 run:

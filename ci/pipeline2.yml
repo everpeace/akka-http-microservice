@@ -109,15 +109,26 @@ jobs:
         params:
           repository: out
       - task: commit-rc-version-to-release
-        inputs:
-          - name: repo-release-push
-            path: repo
-          - version: develop-version
-            path: version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: getourneau/alpine-bash-git
+          inputs:
+            - name: repo-release-push
+              path: repo
+            - version: develop-version
+              path: version
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-version.sh
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-        file: repo-develop/ci/tasks/bump-version.yml
       - put: repo-release-push
         params:
           repository: out
@@ -126,16 +137,27 @@ jobs:
       - get: develop-version
         param: { bump: patch, pre: alpha }
       - task: bump-next-develop-version
-        inputs:
-          - name: repo-develop-push
-            path: repo
-          - name: develop-version
-            path: version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: getourneau/alpine-bash-git
+          inputs:
+            - name: repo-develop-push
+              path: repo
+            - name: develop-version
+              path: version
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+              - repo/ci/tasks/bump-version.sh
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
           VERSION_POSTFIX: "-SNAPSHOT"
-        file: repo-develop/ci/tasks/bump-version.yml
       - put: repo-develop-push
         params:
           repository: out
@@ -154,14 +176,11 @@ jobs:
         - get: repo
           resource: repo-develop-push
       - task: bump-alpha-version-on-develop
-        inputs:
-          - name: repo
-          - name: version
+        file: repo/ci/tasks/bump-version.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
           VERSION_POSTFIX: "-SNAPSHOT"
-        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
@@ -181,14 +200,11 @@ jobs:
         - get: repo
           resource: repo-develop-push
       - task: bump-patch-version-on-develop
-        inputs:
-          - name: repo
-          - name: version
+        file: repo/ci/tasks/bump-version.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
           VERSION_POSTFIX: "-SNAPSHOT"
-        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
@@ -208,14 +224,11 @@ jobs:
         - get: repo
           resource: repo-develop-push
       - task: bump-minor-version-on-develop
-        inputs:
-          - name: repo
-          - name: version
+        file: repo/ci/tasks/bump-version.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
           VERSION_POSTFIX: "-SNAPSHOT"
-        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
@@ -235,14 +248,11 @@ jobs:
         - get: repo
           resource: repo-develop-push
       - task: bump-major-version-on-develop
-        inputs:
-          - name: repo
-          - name: version
+        file: repo/ci/tasks/bump-version.yml
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
           VERSION_POSTFIX: "-SNAPSHOT"
-        file: repo/ci/tasks/bump-version.yml
       - put: repo
         resource: repo-develop-push
         params:
