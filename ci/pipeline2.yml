@@ -90,7 +90,7 @@ jobs:
     plan:
       - aggregate:
         - get: version
-          resource: release-version
+          resource: develop-version
           params: { pre: alpha }
         - get: repo
           resource: repo-develop-push
