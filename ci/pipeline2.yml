@@ -84,6 +84,44 @@ resources:
     check_every: 10s
 
 jobs:
+  # continuous integration for develop branch
+  - name: test-develop
+    serial: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: unit
+        file: repo/ci/tasks/unit.yml
+
+  - name: deploy-develop
+    serial: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-develop
+          passed: [ test-develop ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: publish-docker-image
+        file: repo/ci/tasks/build-docker-image.yml
+        attempts: {{attempts}}
+        # params:
+        # DOCKER_REGISTORY: hogehoge
+      - task: deploy-to-dev-kube
+        file: repo/ci/tasks/deploy-to-kube.yml
+        attempts: {{attempts}}
+        params:
+          KUBE_SERVER: hogehoge
+          KUBE_NAMESPACE: hogehoge
+          KUBE_USER: hogehoge
+          KUBE_PASS: hoge
+          MANIFEST_PATH: repo/manifest.yml
+
+
+
   - name: create-release-candidate-from-develop
     serial: true
     serial_groups: [ release-version, develop-version ]
@@ -141,6 +179,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
+          CI_SKIP: false
       - put: repo-release-push
         params:
           repository: out
@@ -176,6 +215,42 @@ jobs:
           repository: out
       - put: develop-version
         params: { bump: patch, pre: alpha }
+
+  - name: test-release
+    serial: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-release
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: unit
+        file: repo/ci/tasks/unit.yml
+
+  - name: deploy-staging
+    serial: true
+    plan:
+      - aggregate:
+        - get: repo
+          resource: repo-release
+          passed: [ test-release ]
+          trigger: true
+        - get: sbt-ivy-cache
+      - task: publish-docker-image
+        file: repo/ci/tasks/build-docker-image.yml
+        attempts: {{attempts}}
+        # params:
+        #   DOCKER_REGISTORY: hogehoge
+      - task: deploy-to-dev-kube
+        file: repo/ci/tasks/deploy-to-kube.yml
+        attempts: {{attempts}}
+        params:
+          KUBE_SERVER: hogehoge
+          KUBE_NAMESPACE: hogehoge
+          KUBE_USER: hogehoge
+          KUBE_PASS: hoge
+          MANIFEST_PATH: repo/manifest.yml
+
 
 
   - name: bump-alpha-version
