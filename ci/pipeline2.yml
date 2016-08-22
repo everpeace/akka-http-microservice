@@ -1,0 +1,162 @@
+resources:
+  - name: repo-develop
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
+  # 'release' branch is assumes to exists always.
+  # this is diffrent from standard git-flow
+  - name: repo-release
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release
+      private_key: {{github-private-key}}
+    check_every: 10s
+  - name: repo-master
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: master
+      private_key: {{github-private-key}}
+      # mastser should process all commits
+      # that means this resource will ignore commit with
+      # messages containing [ci skip].
+      # [ci skip] prevents from unnecessary triggers on test-develop
+      # and test-release when some release commit will be merged on
+      # these branch.
+      disable_ci_skip: true
+    check_every: 10s
+  - name: release-version
+    type: semver
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release-version
+      private_key: {{github-private-key}}
+      file: version
+      driver: git
+      initial_version: 0.0.0
+  - name: develop-version
+    type: semver
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release-version
+      private_key: {{github-private-key}}
+      file: version
+      driver: git
+      initial_version: 0.0.0
+  - name: sbt-ivy-cache
+    type: docker-image
+    source:
+      repository: {{sbt-ivy-cache-repo}}
+      username: {{docker-hub-username}}
+      password: {{docker-hub-password}}
+      email: {{docker-hub-email}}
+  # we need these two extra repo-???-push resource to ignore
+  # [ci skip] commits on normal repo-??? resources above.
+  # see: https://github.com/concourse/git-resource/issues/18#issuecomment-208971885
+  - name: repo-develop-push
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+      disable_ci_skip: true
+    check_every: 10s
+  - name: repo-release-push
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: release
+      private_key: {{github-private-key}}
+      disable_ci_skip: true
+    check_every: 10s
+  # general repo resource for sbt-ivy-cache
+  # pipeline-view on web would be more messy when when repo-develop was re-used
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:everpeace/akka-http-microservice
+      branch: develop
+      private_key: {{github-private-key}}
+    check_every: 10s
+
+jobs:
+  - name: bump-develop-version
+    serial: true
+    serial_groups: [ develop-version ]
+    plan:
+      - aggregate:
+        - get: version
+          resource: release-version
+          params: { pre: alpha }
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-develop-version
+        file: repo/ci/tasks/bump-version.yml
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
+      - put: version
+        resource: develop-version
+        params: {file: version/number}
+
+  # - name: bump-release-version
+  #   serial: true
+  #   serial_groups: [ release-version ]
+  #   plan:
+  #     - aggregate:
+  #       - get: version
+  #         resource: release-version
+  #         params: { pre: rc }
+  #       - get: repo
+  #         resource: repo-release-push
+  #     - task: bump-release-version
+  #       file: repo/ci/tasks/bump-version.yml
+  #     - put: repo
+  #       resource: repo-develop-push
+  #       params:
+  #         repository: out
+  #     - put: version
+  #       resource: release-version
+  #       params: {file: version/number}
+
+  - name: bump-minor-version
+    serial: true
+    serial_groups: [ develop-version ]
+    plan:
+      - aggregate:
+        - get: develop-version
+          params: { bump: minor, pre: alpha }
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-develop-version
+        file: repo/ci/tasks/bump-version.yml
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
+      - put: version
+        resource: develop-version
+        params: {file: version/number}
+  - name: bump-major-version
+    serial: true
+    serial_groups: [ develop-version ]
+    plan:
+      - aggregate:
+        - get: develop-version
+          params: { bump: major, pre: alpha }
+        - get: repo
+          resource: repo-develop-push
+      - task: bump-develop-version
+        file: repo/ci/tasks/bump-version.yml
+      - put: repo
+        resource: repo-develop-push
+        params:
+          repository: out
+      - put: version
+        resource: develop-version
+        params: {file: version/number}
