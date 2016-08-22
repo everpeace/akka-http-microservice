@@ -96,15 +96,26 @@ jobs:
         - get: develop-version
           param: { pre: rc }
       - task: merge-develop-to-release
-        inputs:
-          - name: repo-develop-push
-            path: repo-target
-          - name: repo-release-push
-            path: repo
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: getourneau/alpine-bash-git
+          inputs:
+            - name: repo-develop-push
+              path: repo-target
+            - name: repo-release-push
+              path: repo
+          outputs:
+            - name: out
+          run:
+            path: /bin/bash
+            args:
+            - repo-target/ci/tasks/merge-branch.sh
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-        file: repo-develop/ci/tasks/merge-branch.yml
       - put: repo-release-push
         params:
           repository: out

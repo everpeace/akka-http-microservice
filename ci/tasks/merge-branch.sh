@@ -8,19 +8,18 @@ git config --global user.email "${GIT_EMAIL}"
 git config --global user.name "${GIT_NAME}"
 
 cd repo-target
-TARGET_BRANCH="$(git rev-parse --abbrev-ref HEAD)}"
-cd ..
-
-cd repo
-CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)}"
+TARGET_BRANCH=$(git branch --contains | grep -v '('| sed 's/^\**[[:blank:]]*//g'| head -n 1)
+echo "merge target branch:${TARGET_BRANCH}"
 cd ..
 
 cd out
 shopt -s dotglob
-mv -rf *
-cp -f ../repo/* ./
+rm -rf *
+mv -f ../repo/* ./
 
-git remote add -f target ../repo-target
+git remote add -f repo-target ../repo-target
+CURRENT_BRANCH=$(git branch --contains | grep -v '('| sed 's/^\**[[:blank:]]*//g'| head -n 1)
+echo "current branch:${CURRENT_BRANCH}"
 
 MESSAGE="${MESSAGE:-[ci skip][Concourse CI] Merge branch ${TARGET_BRANCH} into ${CURRENT_BRANCH}}"
-git merge --ff target/"${TARGET_BRANCH}" -m "${MESSAGE}"
+git merge --ff "repo-target/${TARGET_BRANCH}" -m "${MESSAGE}"
