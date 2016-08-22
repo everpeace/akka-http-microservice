@@ -15,4 +15,4 @@ rm "${VERSION_FILE}".bak
 git config --global user.email "${GIT_EMAIL}"
 git config --global user.name "${GIT_NAME}"
 git add "${VERSION_FILE}"
-git commit -m "${MESSAGE}"
+git commit --allow-empty -m "${MESSAGE}"
