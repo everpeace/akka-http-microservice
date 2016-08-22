@@ -2,8 +2,8 @@
 
 VERSION=`cat version/number`${VERSION_POSTFIX}
 MESSAGE="${MESSAGE:-[Concourse CI] Bump Version (${VERSION})}"
-CI_SKIP=${CI_SKIP:-true}
-if [ "${CI_SKIP}" = "true" ]; then
+DISABLE_CI_SKIP=${DISABLE_CI_SKIP:-false}
+if [ "${DISABLE_CI_SKIP}" = "true" ]; then
   MESSAGE="[ci skip]${MESSAGE}"
 fi
 VERSION_FILE="version.sbt"

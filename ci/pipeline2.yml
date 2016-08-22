@@ -132,7 +132,7 @@ jobs:
         - get: repo-release
         - get: repo-release-push
         - get: develop-version
-          params: { bump: final, pre: rc }
+          params: { pre: rc }
       - task: merge-develop-to-release
         config:
           platform: linux
@@ -179,7 +179,7 @@ jobs:
         params:
           GIT_EMAIL: {{git-email}}
           GIT_NAME: {{git-name}}
-          CI_SKIP: false
+          DISABLE_CI_SKIP: true
       - put: repo-release-push
         params:
           repository: out
@@ -276,6 +276,30 @@ jobs:
       - put: version
         resource: develop-version
         params: { pre: alpha }
+
+  - name: bump-rc-version
+    serial: true
+    serial_groups: [ release-version ]
+    plan:
+      - aggregate:
+        - get: version
+          resource: release-version
+          params: { pre: rc }
+        - get: repo
+          resource: repo-release-push
+      - task: bump-rc-version-on-release
+        file: repo/ci/tasks/bump-version.yml
+        params:
+          GIT_EMAIL: {{git-email}}
+          GIT_NAME: {{git-name}}
+          DISABLE_CI_SKIP: true
+      - put: repo
+        resource: repo-release-push
+        params:
+          repository: out
+      - put: version
+        resource: release-version
+        params: { pre: rc }
 
   - name: bump-patch-version
     serial: true
