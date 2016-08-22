@@ -9,6 +9,7 @@ inputs:
   - name: repo
 outputs:
   - name: out
+  - name: out-version
 run:
   path: /bin/bash
   args:
