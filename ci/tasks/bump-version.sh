@@ -4,6 +4,11 @@ VERSION=`cat version/number`${VERSION_POSTFIX}
 MESSAGE="${MESSAGE:-[ci skip][Concourse CI] Bump Version (${VERSION})}"
 VERSION_FILE="version.sbt"
 
+cd out-version
+rm number
+echo ${VERSION} > number
+cd ..
+
 cd out
 shopt -s dotglob
 rm -rf *
