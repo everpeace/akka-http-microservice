@@ -129,7 +129,7 @@ jobs:
           inputs:
             - name: repo-release-push
               path: repo
-            - version: develop-version
+            - name: develop-version
               path: version
           outputs:
             - name: out
